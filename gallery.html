@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fancy Vehicle Gallery</title>
+
+    <!-- Bootstrap (Grid system + utilities) -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        /* ================================================
+           FANCY GALLERY — MAIN CARD STYLING
+        ================================================= */
+        
+        .fg-card {
+            cursor: pointer;
+            transition: transform .28s cubic-bezier(.2, .9, .3, 1), box-shadow .28s;
+            outline: none;
+        }
+        
+        .fg-card:hover,
+        .fg-card:focus {
+            transform: translateY(-6px) scale(1.02);
+            box-shadow: 0 12px 30px rgba(2, 6, 23, 0.45);
+        }
+        
+        .fg-title {
+            font-size: 1rem;
+            font-weight: 700;
+        }
+        
+        .fg-sub {
+            font-size: .85rem;
+        }
+        /* ================================================
+           LIGHTBOX / MODAL
+        ================================================= */
+        
+        .fg-lightbox {
+            position: fixed;
+            inset: 0;
+            padding: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 20000;
+        }
+        
+        .fg-lightbox.d-none {
+            display: none;
+        }
+        
+        .fg-lightbox .fg-backdrop {
+            position: absolute;
+            inset: 0;
+            background: rgba(3, 6, 12, 0.75);
+            backdrop-filter: blur(4px);
+        }
+        
+        .fg-panel {
+            position: relative;
+            z-index: 2;
+            width: 100%;
+            max-width: 1100px;
+            padding: 18px;
+            border-radius: 12px;
+            background: #fff;
+            box-shadow: 0 20px 60px rgba(2, 6, 23, 0.6);
+        }
+        
+        .fg-close {
+            position: absolute;
+            right: 10px;
+            top: 10px;
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+        }
+        /* ================================================
+           MAIN IMAGE DISPLAY
+        ================================================= */
+        
+        .fg-main-wrap {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .fg-main-media {
+            position: relative;
+            overflow: hidden;
+            min-height: 260px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+            background: #111;
+        }
+        
+        .fg-main-img {
+            max-width: 100%;
+            max-height: 62vh;
+            transition: transform .6s cubic-bezier(.2, .9, .3, 1), filter .5s;
+            transform-origin: center;
+        }
+        
+        .fg-anim-overlay {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+        }
+        /* ================================================
+           THUMBNAILS
+        ================================================= */
+        
+        .fg-thumbs {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding-bottom: 6px;
+        }
+        
+        .fg-thumbs img {
+            width: 92px;
+            height: 64px;
+            object-fit: cover;
+            border-radius: 6px;
+            border: 2px solid transparent;
+            cursor: pointer;
+            transition: transform .18s, border-color .18s;
+        }
+        
+        .fg-thumbs img.active {
+            transform: scale(1.05);
+            border-color: rgba(0, 0, 0, 0.2);
+        }
+        
+        @media (max-width: 760px) {
+            .fg-panel {
+                padding: 14px;
+            }
+            .fg-thumbs img {
+                width: 72px;
+                height: 52px;
+            }
+        }
+        /* ================================================
+           ANIMATION OPTIONS
+        ================================================= */
+        
+        .fg-zoom .fg-main-img {
+            transform: scale(1.03);
+        }
+        
+        .fg-blur .fg-main-img {
+            filter: blur(2px) grayscale(.03);
+        }
+        
+        .fg-fade .fg-main-img {
+            opacity: 0;
+            transition: opacity .45s ease;
+        }
+        
+        .fg-fade.show .fg-main-img {
+            opacity: 1;
+        }
+    </style>
+</head>
+
+<body style="background:#f8f9fa;">
+
+    <!-- ================================================================
+         GALLERY SECTION
+    ================================================================= -->
+    <section id="fancy-gallery" class="py-5">
+        <div class="container">
+
+            <div class="row align-items-center mb-4">
+                <div class="col">
+                    <h2 class="fw-bold text-8 mb-1">Gallery</h2>
+                    <p class="text-4 text-muted mb-0">Click any card to view more photos, read the description, or play slideshow.</p>
+                </div>
+
+                <div class="col-auto">
+                    <button id="fg-toggle-layout" class="btn btn-outline-secondary btn-sm">Switch to 3×</button>
+                </div>
+            </div>
+
+            <div class="row" id="fg-grid">
+
+                <!-- Card 0 -->
+                <div class="col-6 col-md-4 col-lg-3 mb-4">
+                    <div class="fg-card card h-100 border-0" data-group="0" tabindex="0">
+                        <img src="img/Yuan_Up.png" class="img-fluid rounded" alt="">
+                        <div class="mt-2">
+                            <strong class="fg-title">Yuan Up</strong>
+                            <small class="fg-sub text-muted">Range:401KM • Price: 32,000,000 RWF</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 1 -->
+                <div class="col-6 col-md-4 col-lg-3 mb-4">
+                    <div class="fg-card card h-100 border-0" data-group="1" tabindex="0">
+                        <img src="img/gallery/Yuan Plus/Yuan Plus4.webp" class="img-fluid rounded" alt="">
+                        <div class="mt-2">
+                            <strong class="fg-title">BYD Yuan Plus</strong>
+                            <small class="fg-sub text-muted">Range:430KM • Price: 36,000,000 RWF</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 2 -->
+                <div class="col-6 col-md-4 col-lg-3 mb-4">
+                    <div class="fg-card card h-100 border-0" data-group="2" tabindex="0">
+                        <img src="img/gallery/BYD_Song_Plus_DM-i.jpg" class="img-fluid rounded" alt="">
+                        <div class="mt-2">
+                            <strong class="fg-title">BYD Song Plus</strong>
+                            <small class="fg-sub text-muted">Range:430KM • Price: 36,000,000 RWF</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 3 -->
+                <div class="col-6 col-md-4 col-lg-3 mb-4">
+                    <div class="fg-card card h-100 border-0" data-group="3" tabindex="0">
+                        <img src="img/leopard3.png" class="img-fluid rounded" alt="">
+                        <div class="mt-2">
+                            <strong class="fg-title">BYD Leopard 3</strong>
+                            <small class="fg-sub text-muted">Range: 501 km • Price: 56,000,000 RWF</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 4 -->
+                <div class="col-6 col-md-4 col-lg-3 mb-4">
+                    <div class="fg-card card h-100 border-0" data-group="4" tabindex="0">
+                        <img src="img/GeelyStarWish.jpg" class="img-fluid rounded" alt="">
+                        <div class="mt-2">
+                            <strong class="fg-title">Geely Starwish</strong>
+                            <small class="fg-sub text-muted">Range:310KM • Price: 25,000,000 RWF</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 5 -->
+                <div class="col-6 col-md-4 col-lg-3 mb-4">
+                    <div class="fg-card card h-100 border-0" data-group="5" tabindex="0">
+                        <img src="img/geelyEX5.png" class="img-fluid rounded" alt="">
+                        <div class="mt-2">
+                            <strong class="fg-title">Geely EX5</strong>
+                            <small class="fg-sub text-muted">Range:490KM • Price: 45,000,000 RWF</small>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- ================================================================
+         LIGHTBOX MODAL
+    ================================================================= -->
+    <div id="fg-lightbox" class="fg-lightbox d-none">
+        <div class="fg-backdrop" data-close></div>
+
+        <div class="fg-panel">
+
+            <button class="fg-close btn btn-light btn-sm" aria-label="Close">✕</button>
+
+            <div class="fg-main-wrap">
+                <div class="fg-main-media">
+                    <img id="fg-main-img" src="" class="fg-main-img">
+                    <div class="fg-anim-overlay"></div>
+                </div>
+
+                <div class="fg-controls">
+                    <button id="fg-prev" class="btn btn-outline-dark btn-sm">◀</button>
+                    <button id="fg-play" class="btn btn-outline-primary btn-sm">Play</button>
+                    <button id="fg-next" class="btn btn-outline-dark btn-sm">▶</button>
+                </div>
+
+                <div class="fg-info mt-3">
+                    <h4 id="fg-title"></h4>
+                    <p id="fg-desc" class="text-muted mb-1"></p>
+                    <small id="fg-counter" class="text-muted"></small>
+                </div>
+
+                <div class="fg-thumbs mt-3" id="fg-thumbs"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================================================================
+         FULL JAVASCRIPT — UNCHANGED, CLEANED
+    ================================================================= -->
+    <script>
+        (function() {
+
+            /* ===========================
+               IMAGE DATA GROUPS
+            ============================ */
+            const fgGroups = [{
+                    title: 'Yuan Up',
+
+
+                    desc: `The Yuan UP 2025 Smart Driving Edition 401KM Vitality Version is a pure electric subcompact SUV released in February 2025.<br>
+It is equipped with a 95 hp permanent-magnet synchronous motor delivering 70 kW and 180 N·m of torque.<br>
+The vehicle offers a 401 km electric range (MIIT/CLTC) and supports fast charging from 30% to 80% in 0.5 hours.<br>
+It uses a single-speed EV transmission and reaches a top speed of 160 km/h, accelerating 0–100 km/h in 12.9 seconds.<br>
+Dimensions are 4310 × 1830 × 1675 mm with a 2620 mm wheelbase and a 5-door, 5-seat layout.<br>
+Energy consumption is 12.2 kWh/100 km, with curb weight of 1520 kg and a luggage capacity of 1320 L.<br>
+Powered by a 45.12 kWh LFP Blade Battery from Fudi, the model includes a lifetime battery warranty for the first owner and a 6-year/150,000 km vehicle warranty.`,
+
+
+
+                    images: [
+
+                        'img/gallery/Yuan Up/Pink.png.webp',
+                        'img/gallery/Yuan Up/Pink2.jpg.webp',
+                        'img/gallery/Yuan Up/White3-1.png.webp',
+                        'img/gallery/Yuan Up/White4.png.webp',
+                        'img/gallery/Yuan Up/Yuan_Up_1.png',
+                        'img/gallery/Yuan Up/Yuan_Up_interior.png',
+                        'img/gallery/Yuan Up/yuan_Up_interior1.webp'
+                    ]
+                },
+
+
+
+                {
+                    title: 'Yuan plus',
+                    desc: `The Yuan PLUS 2025 Intelligent Driving Edition 430KM Leading is a fully electric compact SUV released in March 2025.<br>
+Equipped with a 204 HP permanent-magnet synchronous motor delivering 150 kW and 310 N·m of torque.<br>
+It offers a 430 km range and supports fast charging (30–80% in 0.5 hours).<br>
+Dimensions: 4455 × 1875 × 1615 mm, 5-door, 5-seat layout.<br>
+Acceleration: 0–100 km/h in 7.3 seconds, Top speed: 160 km/h.<br>
+Battery: 49.92 kWh BYD LFP Blade Battery with lifetime warranty for the first owner.`,
+                    images: [
+
+                        'img/gallery/Yuan Plus/Yuan Plus 3.webp',
+                        'img/gallery/Yuan Plus/Yuan Plus2.webp',
+                        'img/gallery/Yuan Plus/Yuan Plus4.webp',
+                        'img/gallery/Yuan Plus/2ad6cc0521092791f326df230d3d44842508x0-2.webp',
+                        'img/gallery/Yuan Plus/5f6bd0fa2b2f0d7eb670d511dae32bab2508x0.webp',
+                        'img/gallery/Yuan Plus/327c2aec213bdce82f91f3fcddb22d3a2508x0.webp',
+                        'img/gallery/Yuan Plus/39512ebff90b5c9e7541721792666b4f2508x0-2.webp'
+                    ]
+                },
+
+
+
+                {
+                    title: 'BYD Song Plus',
+                    desc: 'The Song Plus is a family-oriented SUV that prioritizes practicality and efficiency.',
+                    images: [
+                        'img/gallery/2023_BYD_Song_Plus_DM-i_(front).jpg',
+                        'img/gallery/BYD_song_plus_interior.jpg',
+                        'img/gallery/BYD_Song_Plus_DM-i.jpg',
+
+
+                    ]
+                },
+
+
+
+
+
+                {
+                    title: 'The Leopard 3',
+                    desc: 'Off-road mech-style vehicle designed for adventure.',
+                    images: [
+                        'img/gallery/leopard3.png.webp',
+                        'img/gallery/bydLeopard3.jpeg'
+                    ]
+                },
+
+
+
+
+                {
+                    title: 'Geely Starwish',
+                    desc: 'A mid-size sedan built on Geely CMA, shared with Volvo.',
+                    images: [
+                        'img/gallery/Geely-Star-Wish-2025-appearance-3.webp',
+                        'img/gallery/Geely-Star-Wish-2025-interior-1.webp',
+                        'img/gallery/GeelyStarWish.png'
+                    ]
+                },
+
+
+
+
+                {
+                    title: 'Geely EX5',
+                    desc: 'Fully electric compact SUV.',
+                    images: [
+                        'img/gallery/Geely_Ex5.jpeg',
+                        'img/gallery/Geely_EX5_Interior2.jpg',
+                        'img/gallery/Geely_Ex5 copy.jpeg'
+                    ]
+                }
+            ];
+
+            /* ===========================
+               ELEMENT REFERENCES
+            ============================ */
+            const cards = document.querySelectorAll('.fg-card');
+            const lb = document.getElementById('fg-lightbox');
+            const lbBackdrop = lb.querySelector('.fg-backdrop');
+            const lbMainImg = document.getElementById('fg-main-img');
+            const lbTitle = document.getElementById('fg-title');
+            const lbDesc = document.getElementById('fg-desc');
+            const lbCounter = document.getElementById('fg-counter');
+            const lbThumbs = document.getElementById('fg-thumbs');
+            const btnClose = document.querySelector('.fg-close');
+            const btnPrev = document.getElementById('fg-prev');
+            const btnNext = document.getElementById('fg-next');
+            const btnPlay = document.getElementById('fg-play');
+            const toggleLayoutBtn = document.getElementById('fg-toggle-layout');
+
+            let activeGroup = null;
+            let activeIndex = 0;
+            let autoplay = false;
+            let autoplayTimer = null;
+
+            let animMode = 'fg-zoom'; // fg-zoom, fg-blur, fg-fade
+
+            /* ===========================
+               OPEN LIGHTBOX
+            ============================ */
+            cards.forEach(card => {
+                card.addEventListener('click', () => {
+                    openLightbox(parseInt(card.dataset.group), 0);
+                });
+
+                card.addEventListener('keydown', e => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        openLightbox(parseInt(card.dataset.group), 0);
+                    }
+                });
+            });
+
+            function openLightbox(groupIndex, imgIndex) {
+                activeGroup = groupIndex;
+                activeIndex = imgIndex;
+
+                const group = fgGroups[groupIndex];
+                if (!group) return;
+
+                lbTitle.textContent = group.title;
+                lbDesc.innerHTML = group.desc;
+
+                lb.classList.remove('fg-zoom', 'fg-blur', 'fg-fade', 'show');
+                lb.classList.add(animMode);
+
+                buildThumbs();
+                renderMain();
+
+                lb.classList.remove('d-none');
+                lb.setAttribute('aria-hidden', 'false');
+
+                if (animMode === 'fg-fade') {
+                    requestAnimationFrame(() => lb.classList.add('show'));
+                }
+
+                btnClose.focus();
+                prefetchNext();
+            }
+
+            /* ===========================
+               CLOSE LIGHTBOX
+            ============================ */
+            btnClose.addEventListener('click', closeLightbox);
+            lbBackdrop.addEventListener('click', closeLightbox);
+
+            function closeLightbox() {
+                lb.classList.add('d-none');
+                lb.setAttribute('aria-hidden', 'true');
+                stopAutoplay();
+            }
+
+            /* ===========================
+               MAIN IMAGE RENDER
+            ============================ */
+            function renderMain() {
+                const imgs = fgGroups[activeGroup].images;
+                lbMainImg.src = imgs[activeIndex];
+                lbMainImg.alt = fgGroups[activeGroup].title + ' — ' + (activeIndex + 1);
+                lbCounter.textContent = `${activeIndex + 1} / ${imgs.length}`;
+
+                [...lbThumbs.children].forEach((el, i) =>
+                    el.classList.toggle('active', i === activeIndex)
+                );
+            }
+
+            /* ===========================
+               BUILD THUMBNAILS
+            ============================ */
+            function buildThumbs() {
+                lbThumbs.innerHTML = '';
+                fgGroups[activeGroup].images.forEach((src, i) => {
+                    const im = document.createElement('img');
+                    im.src = src;
+                    im.alt = "Thumbnail " + (i + 1);
+                    im.addEventListener('click', () => {
+                        activeIndex = i;
+                        renderMain();
+                        prefetchNext();
+                    });
+                    lbThumbs.appendChild(im);
+                });
+                renderMain();
+            }
+
+            /* ===========================
+               CONTROLS
+            ============================ */
+            btnPrev.addEventListener('click', prevImage);
+            btnNext.addEventListener('click', nextImage);
+
+            function prevImage() {
+                const len = fgGroups[activeGroup].images.length;
+                activeIndex = (activeIndex - 1 + len) % len;
+                renderMain();
+                prefetchNext();
+            }
+
+            function nextImage() {
+                const len = fgGroups[activeGroup].images.length;
+                activeIndex = (activeIndex + 1) % len;
+                renderMain();
+                prefetchNext();
+            }
+
+            /* ===========================
+               KEYBOARD SUPPORT
+            ============================ */
+            document.addEventListener('keydown', e => {
+                if (lb.classList.contains('d-none')) return;
+                if (e.key === 'Escape') closeLightbox();
+                if (e.key === 'ArrowLeft') prevImage();
+                if (e.key === 'ArrowRight') nextImage();
+            });
+
+            /* ===========================
+               AUTOPLAY
+            ============================ */
+            btnPlay.addEventListener('click', () => {
+                autoplay ? stopAutoplay() : startAutoplay(3000);
+            });
+
+            function startAutoplay(interval) {
+                autoplay = true;
+                btnPlay.textContent = 'Pause';
+                autoplayTimer = setInterval(nextImage, interval);
+            }
+
+            function stopAutoplay() {
+                autoplay = false;
+                btnPlay.textContent = 'Play';
+                clearInterval(autoplayTimer);
+            }
+
+            /* ===========================
+               PREFETCH NEXT IMAGE
+            ============================ */
+            function prefetchNext() {
+                const imgs = fgGroups[activeGroup].images;
+                const next = imgs[(activeIndex + 1) % imgs.length];
+                const l = document.createElement('link');
+                l.rel = 'prefetch';
+                l.href = next;
+                document.head.appendChild(l);
+            }
+
+            /* ===========================
+               LAYOUT SWITCHER (4× <-> 3×)
+            ============================ */
+            let is4col = true;
+
+            toggleLayoutBtn.addEventListener('click', () => {
+                const grid = document.getElementById('fg-grid');
+                is4col = !is4col;
+
+                [...grid.children].forEach(col => {
+                    col.classList.toggle('col-lg-3', is4col);
+                    col.classList.toggle('col-lg-4', !is4col);
+                });
+
+                toggleLayoutBtn.textContent = is4col ? 'Switch to 3×' : 'Switch to 4×';
+            });
+
+            /* ===========================
+               PREVENT BACKGROUND SCROLL
+            ============================ */
+            const observer = new MutationObserver(() => {
+                if (!lb.classList.contains('d-none')) {
+                    document.documentElement.style.overflow = 'hidden';
+                    document.body.style.overflow = 'hidden';
+                } else {
+                    document.documentElement.style.overflow = '';
+                    document.body.style.overflow = '';
+                }
+            });
+            observer.observe(lb, {
+                attributes: true,
+                attributeFilter: ['class']
+            });
+
+            stopAutoplay();
+
+        })();
+    </script>
+
+</body>
+
+</html>
